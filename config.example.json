@@ -1,0 +1,7 @@
+{
+  "//": "bwiki-mcp-server 配置。只填站点代号即可——BWiki 所有 WIKI 共用 host wiki.biligame.com，按路径第一段区分，地址由代号推出。代号可用 list-wikis 查到。",
+  "//wikis": "要使用的 WIKI 代号列表，第一个即默认站点。至少填一个，否则服务器拒绝启动。",
+  "wikis": ["<站点代号>"],
+  "//uploadDirs": "upload-file 允许读取的绝对路径目录。空数组 = 禁用上传。",
+  "uploadDirs": []
+}

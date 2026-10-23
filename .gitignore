@@ -1,0 +1,17 @@
+node_modules/
+dist/
+*.log
+.env
+.DS_Store
+
+# 本地配置不入库：每台机器的站点列表不同，config.example.json 才是模板
+/config.json
+
+# 本地项目规则，不入库（含站点约束与账号相关约定）
+# 只排除根目录这一个；vendor/ 下上游自带的 AGENTS.md 需要保留
+/AGENTS.md
+
+# 上游源码只作本地参照（C 方案：只把改动的代码整合进 src/mediawiki/，
+# 不把整个上游仓库搬进版本库）。需要同步时重新 clone 即可。
+# 出处：https://github.com/ProfessionalWiki/MediaWiki-MCP-Server (MIT)
+vendor/

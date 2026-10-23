@@ -1,0 +1,47 @@
+{
+  "name": "bwiki-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for BWiki (wiki.biligame.com) with mandatory bilibili passport authentication",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/bundle.cjs",
+  "bin": {
+    "bwiki-mcp-server": "dist/bundle.cjs"
+  },
+  "files": [
+    "dist/bundle.cjs",
+    "config.example.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "prepublishOnly": "npm run build && npm run bundle",
+    "build": "npm run build:src",
+    "dev": "tsc -p tsconfig.json --watch",
+    "start": "node dist/stdio.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "bundle": "node scripts/bundle.mjs",
+    "build:src": "tsc -p tsconfig.json",
+    "test": "node scripts/smoke-stdio.mjs",
+    "test:guard": "node scripts/probe-liveness-guard.mjs",
+    "test:boot-session": "node scripts/probe-liveness.mjs",
+    "test:writes": "node scripts/probe-writes.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/node": "^2.1.1",
+    "@modelcontextprotocol/sdk": "^1.17.0",
+    "@modelcontextprotocol/server": "^2.3.1",
+    "mwn": "^3.0.3",
+    "node-fetch": "^3.3.2",
+    "puppeteer-core": "^25.15.0",
+    "types-mediawiki-api": "^2.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.9.2"
+  }
+}
