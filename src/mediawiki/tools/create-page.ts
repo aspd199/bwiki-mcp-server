@@ -26,7 +26,7 @@ const inputSchema = {
 export const createPage: Tool<typeof inputSchema> = {
 	name: 'create-page',
 	description:
-		"Creates a new wiki page with the provided content and returns the new page's title, page ID, and first revision ID. Fails if a page with the given title already exists; for existing pages, use update-page. The optional contentModel parameter selects a non-default content format (e.g. javascript, css); when omitted, MediaWiki picks the default for the title's namespace. For building up a large page across multiple calls, pair create-page with chained update-page(operation='append') calls, each adding a chunk.",
+		"Creates a new wiki page with the provided content and returns the new page's title, page ID, and first revision ID. Fails if a page with the given title already exists; for existing pages, use update-page. The optional contentModel parameter selects a non-default content format (e.g. javascript, css); when omitted, MediaWiki picks the default for the title's namespace. Source carries the whole page in one call: there is no length limit here beyond the wiki's own maximum page size (reported as maxarticlesize by get-site-info, 2 MB on BWiki), so content of any ordinary size — a source file, a module, a long article — belongs in a single create-page rather than being split. Splitting is only for content that exceeds that maximum, by pairing create-page with chained update-page(operation='append') calls, each adding a chunk.",
 	inputSchema,
 	annotations: {
 		title: 'Create page',

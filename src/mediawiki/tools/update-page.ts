@@ -7,6 +7,16 @@ import { buildPageUrl, formatEditComment } from '../wikis/utils.ts';
 import { contentMaxBytes } from '../results/truncation.ts';
 import { editableChildrenOf } from '../services/sectionSubtree.ts';
 
+/**
+ * wiki 对「nocreate 且页面不存在」报 missingtitle。
+ * mwn 把它作为异常抛出，message 形如
+ * `missingtitle: The page you specified doesn't exist.`。
+ */
+function isMissingTitle(err: unknown): boolean {
+	const message = err instanceof Error ? err.message : String(err);
+	return /\bmissingtitle\b/.test(message);
+}
+
 const OPERATIONS = ['replace', 'append', 'prepend', 'find-replace'] as const;
 type Operation = (typeof OPERATIONS)[number];
 
@@ -360,7 +370,10 @@ async function findReplace(
 	}
 	const page = await mwn.read(title, readParams);
 	if (page.missing) {
-		return ctx.format.notFound(`Page "${title}" not found`);
+		// 指明下一步：只说 not found 会让调用方反复试标题，而正确动作是换 create-page。
+		return ctx.format.notFound(
+			`Page "${title}" not found. To create it, use create-page.`,
+		);
 	}
 	if (page.invalid) {
 		return ctx.format.invalidInput(`"${title}" is not a valid page title`);
@@ -461,6 +474,18 @@ export const updatePage: Tool<typeof inputSchema> = {
 				return ctx.format.invalidInput(removalError);
 			}
 		}
-		return submitEdit(ctx, mwn, buildEditParams(ctx, args, plan), args);
+		try {
+			return await submitEdit(ctx, mwn, buildEditParams(ctx, args, plan), args);
+		} catch (err) {
+			// nocreate 让 wiki 对不存在的页面报 missingtitle，原文是 MediaWiki 的
+			// 英文错误，看不出下一步该换 create-page，故在此补一句指引。
+			if (isMissingTitle(err)) {
+				return ctx.format.notFound(
+					`Page "${args.title}" not found. To create it, use create-page.`,
+					'missingtitle',
+				);
+			}
+			throw err;
+		}
 	},
 };
