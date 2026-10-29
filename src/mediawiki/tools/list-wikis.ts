@@ -27,7 +27,7 @@ const inputSchema = {
 		.string()
 		.optional()
 		.describe(
-			'Only return wikis whose name or key contains this text, e.g. "原神" or "ys". Compared case-insensitively.',
+			'Only return wikis whose name or key contains this text, matched case-insensitively (for example "demo" matches a key "Demo").',
 		),
 	configuredOnly: z
 		.boolean()

@@ -137,14 +137,14 @@ try {
 // ---------------------------------------------------------------- list queries
 
 try {
-  const cats = await bot.getPagesInCategory("分类:舰娘", 3);
+  const cats = await bot.getPagesInCategory("分类:首页", 3);
   report("getPagesInCategory()", Array.isArray(cats), `数量=${cats?.length ?? 0}`);
 } catch (err) {
   report("getPagesInCategory()", false, err.message);
 }
 
 try {
-  const byPrefix = await bot.getPagesByPrefix("云顶", 3);
+  const byPrefix = await bot.getPagesByPrefix("首页", 3);
   report("getPagesByPrefix()", Array.isArray(byPrefix), `数量=${byPrefix?.length ?? 0}`);
 } catch (err) {
   report("getPagesByPrefix()", false, err.message);

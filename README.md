@@ -30,6 +30,7 @@
 | `get-recent-changes` | 列出全站近期变更，可按时间、命名空间、用户、标签、类型过滤。 |
 | `get-revision` | 获取页面的指定修订版本。 |
 | `get-site-info` | 获取站点的关键设置：MediaWiki 版本、内容语言、命名空间、已安装扩展、许可协议。 |
+| `list-pages` | 按命名空间列出页面，按标题排序（每次最多 500 条，用 `continueFrom` 翻页）。 |
 | `list-wikis` | 列出农场内的 WIKI——代号、站点名、地址、是否只读或默认，以及是否已在本地配置。支持 `limit`、`query`、`configuredOnly`。 |
 | `parse-wikitext` | 把 wikitext 渲染成 HTML，不保存。 |
 | `search-page` | 对页面标题与正文做全文搜索。 |

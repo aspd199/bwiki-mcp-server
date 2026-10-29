@@ -17,6 +17,12 @@ export type SiteInfo = {
 	 */
 	contentNamespaces?: readonly number[];
 	/**
+	 * 命名空间名与别名到 ID 的映射，键已按 MediaWiki 规则归一化
+	 * （小写，空格作下划线）。用于把带前缀的标题还原成不含前缀的标题。
+	 * siteinfo 未报告时缺省。
+	 */
+	namespaceNames?: Readonly<Record<string, number>>;
+	/**
 	 * Wikibase 查询服务的 SPARQL 端点，由 siteinfo 发布。
 	 */
 	sparqlEndpoint?: string;

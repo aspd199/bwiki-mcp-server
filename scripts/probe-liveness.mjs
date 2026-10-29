@@ -84,7 +84,7 @@ try {
   try {
     const res = await client.callTool({
       name: "get-page",
-      arguments: { title: "云顶之弈" },
+      arguments: { title: "首页" },
     });
     const text = res.content?.[0]?.text ?? "";
     const refused =

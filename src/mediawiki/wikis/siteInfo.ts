@@ -13,7 +13,11 @@ interface SiteInfoApiResponse {
 			'wikibase-sparql'?: string;
 		};
 		rightsinfo?: { url?: string; text?: string };
-		namespaces?: Record<string, { id?: number; content?: boolean }>;
+		namespaces?: Record<
+			string,
+			{ id?: number; name?: string; canonical?: string; content?: boolean }
+		>;
+		namespacealiases?: { id?: number; alias?: string }[];
 	};
 }
 
@@ -39,7 +43,7 @@ async function fetchSiteInfo(ctx: ToolContext, wikiKey: string): Promise<SiteInf
 		const response = (await mwn.request({
 			action: 'query',
 			meta: 'siteinfo',
-			siprop: 'general|rightsinfo|namespaces',
+			siprop: 'general|rightsinfo|namespaces|namespacealiases',
 			formatversion: '2',
 		})) as SiteInfoApiResponse;
 
@@ -54,6 +58,10 @@ async function fetchSiteInfo(ctx: ToolContext, wikiKey: string): Promise<SiteInf
 			rights?.url && rights.text ? { url: rights.url, title: rights.text } : undefined;
 
 		const contentNamespaces = readContentNamespaces(response.query?.namespaces);
+		const namespaceNames = readNamespaceNames(
+			response.query?.namespaces,
+			response.query?.namespacealiases,
+		);
 
 		const resolved: SiteInfo = {
 			server: normalizeServer(general.server),
@@ -67,6 +75,7 @@ async function fetchSiteInfo(ctx: ToolContext, wikiKey: string): Promise<SiteInf
 				: {}),
 			...(license ? { license } : {}),
 			...(contentNamespaces.length > 0 ? { contentNamespaces } : {}),
+			...(Object.keys(namespaceNames).length > 0 ? { namespaceNames } : {}),
 		};
 		ctx.siteInfoCache.set(wikiKey, resolved);
 		return resolved;
@@ -121,4 +130,32 @@ function readContentNamespaces(
 		}
 	}
 	return [...ids].sort((a, b) => a - b);
+}
+
+// 命名空间名与别名到 ID 的映射，键按 MediaWiki 的方式归一化：
+// 小写，空格作下划线，故「模块:」与「module:」都能查到。
+function readNamespaceNames(
+	namespaces: Record<string, { id?: number; name?: string; canonical?: string }> | undefined,
+	aliases: { id?: number; alias?: string }[] | undefined,
+): Record<string, number> {
+	const normalize = (name: string): string => name.toLowerCase().replace(/ /g, '_');
+	const names: Record<string, number> = {};
+
+	for (const entry of Object.values(namespaces ?? {})) {
+		if (typeof entry.id !== 'number') {
+			continue;
+		}
+		for (const name of [entry.name, entry.canonical]) {
+			if (typeof name === 'string' && name !== '') {
+				names[normalize(name)] = entry.id;
+			}
+		}
+	}
+
+	for (const alias of aliases ?? []) {
+		if (typeof alias.id === 'number' && typeof alias.alias === 'string' && alias.alias !== '') {
+			names[normalize(alias.alias)] = alias.id;
+		}
+	}
+	return names;
 }

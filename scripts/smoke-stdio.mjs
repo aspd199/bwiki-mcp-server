@@ -72,7 +72,7 @@ try {
   const mustHave = [
     "get-page", "search-page", "whoami", "get-site-info",
     "create-page", "update-page", "delete-page", "upload-file",
-    "parse-wikitext", "get-recent-changes",
+    "parse-wikitext", "get-recent-changes", "list-pages",
   ];
   const missing = mustHave.filter((n) => !names.includes(n));
   report("BWiki 需要的工具齐全", missing.length === 0, missing.length ? `缺: ${missing.join(", ")}` : "全部在场");
@@ -142,7 +142,7 @@ try {
 // ---------------------------------------------------------------- search
 
 try {
-  const res = await client.callTool({ name: "search-page", arguments: { query: "云顶之弈", limit: 3 } });
+  const res = await client.callTool({ name: "search-page", arguments: { query: "首页", limit: 3 } });
   const text = textOf(res);
   if (refusedForNoSession(res)) {
     report("search-page 未登录时被拒", true, text.slice(0, 120));
@@ -157,7 +157,7 @@ try {
 // ---------------------------------------------------------------- extension gate
 
 try {
-  const res = await client.callTool({ name: "smw-query", arguments: { query: "[[分类:舰娘]]", limit: 3 } });
+  const res = await client.callTool({ name: "smw-query", arguments: { query: "[[分类:首页]]", limit: 3 } });
   const text = textOf(res);
   const isError = res.isError === true;
   if (refusedForNoSession(res)) {
@@ -174,11 +174,20 @@ try {
 // ---------------------------------------------------------------- list-wikis
 
 // The farm roster is ~1000 wikis, so the tool paginates by default and offers
-// a query filter. Both are exercised, plus the configured-only view.
+// a query filter. Both are exercised, plus the configured-only view. The roster
+// grows, so the total is asserted to be reported and non-zero and for the page
+// to be smaller than the total (i.e. actually paginated) rather than to equal a
+// number that changes upstream.
 try {
   const res = await client.callTool({ name: "list-wikis", arguments: {} });
   const text = textOf(res);
-  report("list-wikis 默认分页", !res.isError && /Total: 993/.test(text), text.match(/Total: \d+/)?.[0] ?? "(无 Total)");
+  const total = res.structuredContent?.total ?? Number(text.match(/Total: (\d+)/)?.[1] ?? NaN);
+  const listed = res.structuredContent?.wikis?.length ?? NaN;
+  report(
+    "list-wikis 默认分页",
+    !res.isError && total > 0 && (Number.isNaN(listed) || listed < total),
+    `Total: ${total}，本页 ${Number.isNaN(listed) ? "?" : listed} 条`,
+  );
 } catch (err) {
   report("list-wikis", false, err.message);
 }
@@ -204,6 +213,23 @@ try {
   );
 } catch (err) {
   report("list-wikis configuredOnly", false, err.message);
+}
+
+// ---------------------------------------------------------------- list-pages
+
+// Namespace enumeration walks the namespace itself rather than a query, so it
+// is the one listing path no other tool exercises.
+try {
+  const res = await client.callTool({ name: "list-pages", arguments: { namespace: 0, limit: 3 } });
+  const text = textOf(res);
+  if (refusedForNoSession(res)) {
+    report("list-pages 未登录时被拒", true, text.slice(0, 120));
+  } else {
+    const count = res.structuredContent?.pages?.length ?? 0;
+    report("list-pages 列出命名空间页面", !res.isError && count > 0, `${count} 条: ${text.slice(0, 100).replace(/\n/g, " ")}`);
+  }
+} catch (err) {
+  report("list-pages", false, err.message);
 }
 
 // ---------------------------------------------------------------- https only

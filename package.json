@@ -1,6 +1,6 @@
 {
   "name": "bwiki-mcp-server",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "MCP server for BWiki (wiki.biligame.com) with mandatory bilibili passport authentication",
   "license": "MIT",
   "type": "module",
